@@ -6,21 +6,21 @@ class WebhoookController < ApplicationController
 	def client
 	  @client ||= Line::Bot::Client.new { |config|
 		config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
-		config.channel_secret = ENV["LINE_CHANNEL_TOKEN"]
+		config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
 	  }
 	end
 
 	def callback
-	body = request.body.read
+	  body = request.body.read
 
-	signature = request.env['HTTP_X_LINE_SIGNATURE']
-	unless client.validate_signature(body, signature)
-	  halt 400, {'Content-Type' => 'text/plain'}, 'Bad Request'
-	end
+	  signature = request.env['HTTP_X_LINE_SIGNATURE']
+	  unless client.validate_signature(body, signature)
+	    halt 400, {'Content-Type' => 'text/plain'}, 'Bad Request'
+	  end
 
-	events = client.parse_events_from(body)
+	  events = client.parse_events_from(body)
 
-	events.each do |event|
+	  events.each do |event|
 		case event
 		when Line::Bot::Event::Message
 			case event.type
@@ -32,7 +32,7 @@ class WebhoookController < ApplicationController
 			  client.reply_message(event['replyToken'], message)
 			end
 		end
-	end
+	  end
 
 	"OK"
   end
